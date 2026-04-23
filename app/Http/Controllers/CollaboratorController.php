@@ -1,0 +1,224 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Project;
+use App\Models\ProjectCollaborator;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
+class CollaboratorController extends Controller
+{
+    /**
+     * Get all collaborators for a project
+     */
+    public function index(Request $request, Project $project)
+    {
+        $this->authorize('view', $project);
+
+        $collaborators = $project->collaborators()
+            ->withPivot('role', 'status', 'accepted_at')
+            ->paginate(15);
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $collaborators,
+            ]);
+        }
+
+        return view('collaborators.index', ['project' => $project, 'collaborators' => $collaborators]);
+    }
+
+    public function create(Request $request, Project $project)
+    {
+        $this->authorize('create', $project);
+        $users = User::where('account_type', 'developer')->get();
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $project,
+            ]);
+        }
+
+        return view('collaborators.create', compact('project', 'users'));
+    }
+    /**
+     * Invite a collaborator
+     */
+    public function store(Request $request, Project $project)
+    {
+        $this->authorize('update', $project);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id|different:' . $request->user()->id,
+            'role' => 'required|in:viewer,contributor,manager',
+        ]);
+
+        // Check if already a collaborator
+        $existing = ProjectCollaborator::where('project_id', $project->id)
+            ->where('user_id', $validated['user_id'])
+            ->first();
+
+        if ($existing && $existing->status === 'accepted') {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User is already a collaborator',
+                ], 409);
+            }
+            return back()->withErrors(['user_id' => 'User is already a collaborator']);
+        }
+
+        $collaborator = ProjectCollaborator::updateOrCreate(
+            [
+                'project_id' => $project->id,
+                'user_id' => $validated['user_id'],
+            ],
+            [
+                'role' => $validated['role'],
+                'status' => 'pending',
+            ]
+        );
+
+        $token = $collaborator->generateInviteToken();
+        $col = User::findOrFail($validated['user_id']);
+        Mail::send('mails.collaboration', ['user' => $col, 'accept_link' => route('collaborations.accept', $token),'decline_link'=> route('collaborations.decline', $token) ,'sender' => $request->user()->name], function ($message) use ($col) {
+            $message->to($col->email, $col->name)->subject('Project Collaboration Invite');
+        });
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitation sent successfully',
+                'data' => $collaborator,
+                'invite_link' => route('collaborations.accept', $collaborator->invite_token),
+            ], 201);
+        }
+
+        return redirect()->back()->with('success', 'Invitation sent successfully');
+    }
+
+    /**
+     * Accept collaboration invitation
+     */
+    public function acceptInvitation(Request $request, $token)
+    {
+        $collaborator = ProjectCollaborator::where('invite_token', $token)->firstOrFail();
+
+        if ($collaborator->status === 'accepted') {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invitation already accepted',
+                ], 409);
+            }
+            return redirect()->route('dashboard')->with('info', 'Invitation already accepted');
+        }
+
+        $collaborator->accept();
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitation accepted successfully',
+                'data' => $collaborator,
+            ]);
+        }
+
+        return redirect()->route('projects.show', $collaborator->project_id)->with('success', 'Invitation accepted successfully');
+    }
+
+    /**
+     * Decline collaboration invitation
+     */
+    public function declineInvitation(Request $request, $token)
+    {
+        $collaborator = ProjectCollaborator::where('invite_token', $token)->firstOrFail();
+
+        $collaborator->decline();
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Invitation declined',
+                'data' => $collaborator,
+            ]);
+        }
+
+        return redirect()->route('dashboard')->with('success', 'Invitation declined');
+    }
+
+    /**
+     * Update collaborator role
+     */
+    public function update(Request $request, Project $project, $collaboratorId)
+    {
+        $this->authorize('update', $project);
+
+        $validated = $request->validate([
+            'role' => 'required|in:viewer,contributor,manager',
+        ]);
+
+        $collaborator = ProjectCollaborator::where('project_id', $project->id)
+            ->where('user_id', $collaboratorId)
+            ->firstOrFail();
+
+        $collaborator->update($validated);
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Collaborator role updated',
+                'data' => $collaborator,
+            ]);
+        }
+
+        return back()->with('success', 'Collaborator role updated');
+    }
+
+    /**
+     * Remove a collaborator
+     */
+    public function destroy(Request $request, Project $project, $collaboratorId)
+    {
+        $this->authorize('update', $project);
+
+        $collaborator = ProjectCollaborator::where('project_id', $project->id)
+            ->where('user_id', $collaboratorId)
+            ->firstOrFail();
+
+        $collaborator->delete();
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Collaborator removed successfully',
+            ]);
+        }
+
+        return back()->with('success', 'Collaborator removed successfully');
+    }
+
+    /**
+     * Get pending invitations for the authenticated user
+     */
+    public function pendingInvitations(Request $request)
+    {
+        $invitations = ProjectCollaborator::where('user_id', $request->user()->id)
+            ->where('status', 'pending')
+            ->with('project')
+            ->latest()
+            ->paginate(15);
+
+        if ($request->is('api/*')) {
+            return response()->json([
+                'success' => true,
+                'data' => $invitations,
+            ]);
+        }
+
+        return view('collaborators.pending', ['invitations' => $invitations]);
+    }
+}
