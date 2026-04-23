@@ -18,7 +18,7 @@ Route::get('/', function () {
 
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth','verified'])->group(function () {
     Route::controller(HomeController::class)->group(function () {
         // Route::get('/dashboard', 'dashboard')->name('dashboard');
     });
