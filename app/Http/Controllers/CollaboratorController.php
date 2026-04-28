@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\ProjectCollaborator;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
@@ -33,7 +32,6 @@ class CollaboratorController extends Controller
     public function create( Project $project)
     {
         $this->authorize('create', $project);
-        $users = User::where('account_type', 'developer')->get();
         if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
@@ -41,7 +39,7 @@ class CollaboratorController extends Controller
             ]);
         }
 
-        return view('collaborators.create', compact('project', 'users'));
+        return view('collaborators.create', compact('project'));
     }
     /**
      * Invite a collaborator
