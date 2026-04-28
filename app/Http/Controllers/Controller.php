@@ -27,7 +27,7 @@ abstract class Controller extends BaseController
         }
 
         if ($project instanceof Project) {
-            if ($project->developer_id === $user?->id) {
+            if ($project->developer_id == $user?->id) {
                 return true;
             }
 

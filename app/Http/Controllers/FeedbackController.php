@@ -85,7 +85,7 @@ class FeedbackController extends Controller
      */
     public function show(Request $request, Project $project, Feedback $feedback)
     {
-        if ($feedback->project_id !== $project->id) {
+        if ($feedback->project_id != $project->id) {
             abort(404);
         }
 
@@ -106,11 +106,11 @@ class FeedbackController extends Controller
      */
     public function update(Request $request, Project $project, Feedback $feedback)
     {
-        if ($feedback->project_id !== $project->id) {
+        if ($feedback->project_id != $project->id) {
             abort(404);
         }
 
-        if ($feedback->user_id !== $request->user()->id && $project->developer_id !== $request->user()->id) {
+        if ($feedback->user_id != $request->user()->id && $project->developer_id != $request->user()->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -138,11 +138,11 @@ class FeedbackController extends Controller
      */
     public function destroy(Request $request, Project $project, Feedback $feedback)
     {
-        if ($feedback->project_id !== $project->id) {
+        if ($feedback->project_id != $project->id) {
             abort(404);
         }
 
-        if ($feedback->user_id !== $request->user()->id && $project->developer_id !== $request->user()->id) {
+        if ($feedback->user_id != $request->user()->id && $project->developer_id != $request->user()->id) {
             abort(403, 'Unauthorized');
         }
 
@@ -163,7 +163,7 @@ class FeedbackController extends Controller
      */
     public function markAsResolved(Request $request, Project $project, Feedback $feedback)
     {
-        if ($feedback->project_id !== $project->id) {
+        if ($feedback->project_id != $project->id) {
             abort(404);
         }
 
@@ -187,7 +187,7 @@ class FeedbackController extends Controller
      */
     private function authorizeProjectAccess($user, $project)
     {
-        if ($project->developer_id === $user->id) {
+        if ($project->developer_id == $user->id) {
             return true;
         }
 

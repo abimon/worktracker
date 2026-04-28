@@ -61,7 +61,7 @@ class CollaboratorController extends Controller
             ->where('user_id', $validated['user_id'])
             ->first();
 
-        if ($existing && $existing->status === 'accepted') {
+        if ($existing && $existing->status == 'accepted') {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
@@ -107,7 +107,7 @@ class CollaboratorController extends Controller
     {
         $collaborator = ProjectCollaborator::where('invite_token', $token)->firstOrFail();
 
-        if ($collaborator->status === 'accepted') {
+        if ($collaborator->status == 'accepted') {
             if ($request->is('api/*')) {
                 return response()->json([
                     'success' => false,
