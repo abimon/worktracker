@@ -15,7 +15,7 @@
                 </svg>
                 Projects
             </a>
-            <a href="{{ route('collaborations.pending') }}" class="block px-4 py-2 rounded-md hover:bg-gray-800 {{ request()->routeIs('collaborations.*') ? 'bg-blue-600' : '' }}">
+            <a href="{{ route('collaborations.index') }}" class="block px-4 py-2 rounded-md hover:bg-gray-800 {{ request()->routeIs('collaborations.*') ? 'bg-blue-600' : '' }}">
                 <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-2a6 6 0 0112 0v2zm0 0h6v-2a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                 </svg>

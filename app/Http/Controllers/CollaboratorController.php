@@ -13,11 +13,11 @@ class CollaboratorController extends Controller
     /**
      * Get all collaborators for a project
      */
-    public function index(Request $request, Project $project)
+    public function index(Request $request)
     {
-        $this->authorize('view', $project);
+        // $this->authorize('view', $project);
 
-        $collaborators = $project->collaborators()
+        $collaborators = ProjectCollaborator::where('user_id', $request->user()->id)
             ->withPivot('role', 'status', 'accepted_at')
             ->paginate(15);
 
@@ -28,7 +28,7 @@ class CollaboratorController extends Controller
             ]);
         }
 
-        return view('collaborators.index', ['project' => $project, 'collaborators' => $collaborators]);
+        return view('collaborators.index', [ 'collaborators' => $collaborators]);
     }
 
     public function create(Request $request, Project $project)
@@ -221,4 +221,5 @@ class CollaboratorController extends Controller
 
         return view('collaborators.pending', ['invitations' => $invitations]);
     }
+    
 }

@@ -45,6 +45,7 @@ Route::middleware(['auth','verified'])->group(function () {
 
     Route::controller(CollaboratorController::class)->group(function(){
         Route::get('collaborations/pending', 'pendingInvitations')->name('collaborations.pending');
+        Route::get('collaborations/', 'index')->name('collaborations.index');
     });
     
     Route::controller(UserController::class)->group(function(){
