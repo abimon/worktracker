@@ -13,7 +13,9 @@
 
             <div>
                 <label for="email" class="block text-sm font-medium text-gray-900 mb-2">Developer Email *</label>
-                <input type="email" name="email" id="email" value="{{ old('email') }}" required class="form-control">
+                <input type="email" name="email" id="email" value="{{ old('email') }}"  required
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 {{ $errors->has('email') ? 'border-red-500' : '' }}"
+                    placeholder="e.g., developer@example.com">
                 @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
