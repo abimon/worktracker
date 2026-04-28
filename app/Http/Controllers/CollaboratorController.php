@@ -14,13 +14,13 @@ class CollaboratorController extends Controller
     /**
      * Get all collaborators for a project
      */
-    public function index(Request $request)
+    public function index()
     {
         // $this->authorize('view', $project);
 
         $collaborators = ProjectCollaborator::where('user_id', Auth::user()->id)->paginate(15);
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'data' => $collaborators,
