@@ -48,12 +48,25 @@ class CollaboratorController extends Controller
     {
         $this->authorize('update', $project);
         $validated =request()->validate([
-            'email' => 'required|email|exists:users,email|different:' .request()->user()->email,
+            'email' => 'required|email|exists:users,email',
             'role' => 'required|in:viewer,contributor,manager',
+        ], [
+            'email.exists' => 'No user found with this email address',
         ]);
         
         $user = User::where('email', request('email'))->first();
+        if($user->id == request()->user()->id){
+            if (request()->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You cannot invite yourself',
+                ], 400);
+            }
+            return back()->withErrors(['email' => 'You cannot invite yourself']);
+        }
+        
         $validated['user_id'] = $user->id;
+
         $existing = ProjectCollaborator::where('project_id', $project->id)
             ->where('user_id', $validated['user_id'])
             ->first();
@@ -93,7 +106,7 @@ class CollaboratorController extends Controller
             ], 201);
         }
 
-        return redirect()->back()->with('success', 'Invitation sent successfully');
+        return redirect()->route('projects.show', $project)->with('success', 'Invitation sent successfully');
     }
 
     /**
