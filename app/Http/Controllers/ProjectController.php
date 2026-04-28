@@ -187,7 +187,7 @@ class ProjectController extends Controller
      */
     private function authorizeProjectAccess($user, $project)
     {
-        if ($project->developer_id === $user->id) {
+        if ($project->developer_id == $user->id) {
             return true;
         }
 
