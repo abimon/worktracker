@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\ProjectCollaborator;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class CollaboratorController extends Controller
@@ -17,9 +18,7 @@ class CollaboratorController extends Controller
     {
         // $this->authorize('view', $project);
 
-        $collaborators = ProjectCollaborator::where('user_id', $request->user()->id)
-            ->withPivot('role', 'status', 'accepted_at')
-            ->paginate(15);
+        $collaborators = ProjectCollaborator::where('user_id', Auth::user()->id)->paginate(15);
 
         if ($request->is('api/*')) {
             return response()->json([
@@ -221,5 +220,5 @@ class CollaboratorController extends Controller
 
         return view('collaborators.pending', ['invitations' => $invitations]);
     }
-    
+
 }
