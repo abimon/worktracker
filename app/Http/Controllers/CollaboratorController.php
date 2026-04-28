@@ -30,11 +30,11 @@ class CollaboratorController extends Controller
         return view('collaborators.index', [ 'collaborators' => $collaborators]);
     }
 
-    public function create(Request $request, Project $project)
+    public function create( Project $project)
     {
         $this->authorize('create', $project);
         $users = User::where('account_type', 'developer')->get();
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'data' => $project,
@@ -46,22 +46,22 @@ class CollaboratorController extends Controller
     /**
      * Invite a collaborator
      */
-    public function store(Request $request, Project $project)
+    public function store( Project $project)
     {
         $this->authorize('update', $project);
-
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id|different:' . $request->user()->id,
+        $validated =request()->validate([
+            'email' => 'required|email|exists:users,email|different:' .request()->user()->email,
             'role' => 'required|in:viewer,contributor,manager',
         ]);
-
-        // Check if already a collaborator
+        
+        $user = User::where('email', request('email'))->first();
+        $validated['user_id'] = $user->id;
         $existing = ProjectCollaborator::where('project_id', $project->id)
             ->where('user_id', $validated['user_id'])
             ->first();
 
         if ($existing && $existing->status == 'accepted') {
-            if ($request->is('api/*')) {
+            if (request()->is('api/*')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'User is already a collaborator',
@@ -82,12 +82,11 @@ class CollaboratorController extends Controller
         );
 
         $token = $collaborator->generateInviteToken();
-        $col = User::findOrFail($validated['user_id']);
-        Mail::send('mails.collaboration', ['user' => $col, 'accept_link' => route('collaborations.accept', $token),'decline_link'=> route('collaborations.decline', $token) ,'sender' => $request->user()->name], function ($message) use ($col, $collaborator) {
-            $message->to($col->email, $col->name)->subject($collaborator->project->name . ' Collaboration Invite');
+        Mail::send('mails.collaboration', ['user' => $user, 'accept_link' => route('collaborations.accept', $token),'decline_link'=> route('collaborations.decline', $token) ,'sender' =>request()->user()->name], function ($message) use ($user, $collaborator) {
+            $message->to($user->email, $user->name)->subject($collaborator->project->name . ' Collaboration Invite');
         });
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'message' => 'Invitation sent successfully',
@@ -102,12 +101,12 @@ class CollaboratorController extends Controller
     /**
      * Accept collaboration invitation
      */
-    public function acceptInvitation(Request $request, $token)
+    public function acceptInvitation( $token)
     {
         $collaborator = ProjectCollaborator::where('invite_token', $token)->firstOrFail();
 
         if ($collaborator->status == 'accepted') {
-            if ($request->is('api/*')) {
+            if (request()->is('api/*')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Invitation already accepted',
@@ -118,7 +117,7 @@ class CollaboratorController extends Controller
 
         $collaborator->accept();
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'message' => 'Invitation accepted successfully',
@@ -132,13 +131,13 @@ class CollaboratorController extends Controller
     /**
      * Decline collaboration invitation
      */
-    public function declineInvitation(Request $request, $token)
+    public function declineInvitation( $token)
     {
         $collaborator = ProjectCollaborator::where('invite_token', $token)->firstOrFail();
 
         $collaborator->decline();
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'message' => 'Invitation declined',
@@ -152,11 +151,11 @@ class CollaboratorController extends Controller
     /**
      * Update collaborator role
      */
-    public function update(Request $request, Project $project, $collaboratorId)
+    public function update( Project $project, $collaboratorId)
     {
         $this->authorize('update', $project);
 
-        $validated = $request->validate([
+        $validated =request()->validate([
             'role' => 'required|in:viewer,contributor,manager',
         ]);
 
@@ -166,7 +165,7 @@ class CollaboratorController extends Controller
 
         $collaborator->update($validated);
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'message' => 'Collaborator role updated',
@@ -180,7 +179,7 @@ class CollaboratorController extends Controller
     /**
      * Remove a collaborator
      */
-    public function destroy(Request $request, Project $project, $collaboratorId)
+    public function destroy( Project $project, $collaboratorId)
     {
         $this->authorize('update', $project);
 
@@ -190,7 +189,7 @@ class CollaboratorController extends Controller
 
         $collaborator->delete();
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'message' => 'Collaborator removed successfully',
@@ -203,15 +202,15 @@ class CollaboratorController extends Controller
     /**
      * Get pending invitations for the authenticated user
      */
-    public function pendingInvitations(Request $request)
+    public function pendingInvitations()
     {
-        $invitations = ProjectCollaborator::where('user_id', $request->user()->id)
+        $invitations = ProjectCollaborator::where('user_id',request()->user()->id)
             ->where('status', 'pending')
             ->with('project')
             ->latest()
             ->paginate(15);
 
-        if ($request->is('api/*')) {
+        if (request()->is('api/*')) {
             return response()->json([
                 'success' => true,
                 'data' => $invitations,

@@ -12,16 +12,9 @@
             @csrf
 
             <div>
-                <label for="user_id" class="block text-sm font-medium text-gray-900 mb-2">Select Developer *</label>
-                <select name="user_id" id="user_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">-- Choose a developer --</option>
-                    @foreach($users as $developer)
-                        <option value="{{ $developer->id }}" {{ old('user_id') == $developer->id ? 'selected' : '' }}>
-                            {{ $developer->name }} ({{ $developer->email }})
-                        </option>
-                    @endforeach
-                </select>
-                @error('user_id') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                <label for="email" class="block text-sm font-medium text-gray-900 mb-2">Developer Email *</label>
+                <input type="email" name="email" id="email" value="{{ old('email') }}" required class="form-control">
+                @error('email') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
             </div>
 
             <div>
