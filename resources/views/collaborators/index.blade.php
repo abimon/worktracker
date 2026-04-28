@@ -16,35 +16,35 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <h3 class="text-lg font-bold text-gray-900">{{ $collaborator->name }}</h3>
-                    <p class="text-gray-600 text-sm">{{ $collaborator->email }}</p>
-                    @if($collaborator->phone)
-                    <p class="text-gray-600 text-sm">{{ $collaborator->phone }}</p>
+                    <h3 class="text-lg font-bold text-gray-900">{{ $collaborator->user->name }}</h3>
+                    <p class="text-gray-600 text-sm">{{ $collaborator->user->email }}</p>
+                    @if($collaborator->user->phone)
+                    <p class="text-gray-600 text-sm">{{ $collaborator->user->phone }}</p>
                     @endif
                 </div>
                 <div class="text-right">
                     <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
-                            @if($collaborator->account_type === 'developer') bg-blue-100 text-blue-800
+                            @if($collaborator->user->account_type === 'developer') bg-blue-100 text-blue-800
                             @else bg-green-100 text-green-800
                             @endif">
-                        {{ ucfirst($collaborator->account_type) }}
+                        {{ ucfirst($collaborator->user->account_type) }}
                     </span>
                 </div>
             </div>
 
-            @if($collaborator->bio)
-            <p class="text-gray-600 text-sm mt-3 line-clamp-2">{{ $collaborator->bio }}</p>
+            @if($collaborator->user->bio)
+            <p class="text-gray-600 text-sm mt-3 line-clamp-2">{{ $collaborator->user->bio }}</p>
             @endif
 
             <div class="mt-4 pt-4 border-t border-gray-200">
                 <div class="text-sm text-gray-600 mb-3">
                     <strong>Role:</strong>
                     <span class="inline-block ml-2 px-2 py-1 rounded bg-gray-100">
-                        {{ ucfirst($collaborator->pivot->role) }}
+                        {{ ucfirst($collaborator->role) }}
                     </span>
                 </div>
 
-                @if($collaborator->is_verified)
+                @if($collaborator->user->is_verified)
                 <div class="text-sm text-green-700 font-medium">
                     ✓ Verified Member
                 </div>
