@@ -83,8 +83,8 @@ class CollaboratorController extends Controller
 
         $token = $collaborator->generateInviteToken();
         $col = User::findOrFail($validated['user_id']);
-        Mail::send('mails.collaboration', ['user' => $col, 'accept_link' => route('collaborations.accept', $token),'decline_link'=> route('collaborations.decline', $token) ,'sender' => $request->user()->name], function ($message) use ($col) {
-            $message->to($col->email, $col->name)->subject('Project Collaboration Invite');
+        Mail::send('mails.collaboration', ['user' => $col, 'accept_link' => route('collaborations.accept', $token),'decline_link'=> route('collaborations.decline', $token) ,'sender' => $request->user()->name], function ($message) use ($col, $collaborator) {
+            $message->to($col->email, $col->name)->subject($collaborator->project->name . ' Collaboration Invite');
         });
 
         if ($request->is('api/*')) {
