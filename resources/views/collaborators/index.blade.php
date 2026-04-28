@@ -16,7 +16,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <h2 class="text-uppercase">{{ $collaborator->project->name }}</h2>
+                    <h2 class="text-xl font-bold text-dark" style="text-transform: uppercase;">{{ $collaborator->project->name }}</h2>
                     <h3 class="text-lg font-bold text-gray-900">{{ $collaborator->user->name }}</h3>
                     <p class="text-gray-600 text-sm">{{ $collaborator->user->email }}</p>
                     @if($collaborator->user->phone)
