@@ -14,9 +14,10 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @foreach($collaborators as $collaborator)
         <div class="bg-white rounded-lg shadow p-6">
+
+            <h2 class="text-xl font-bold text-primary" style="text-transform: uppercase;">{{ $collaborator->project->name }}</h2>
             <div class="flex items-start justify-between">
                 <div class="flex-1">
-                    <h2 class="text-xl font-bold text-dark" style="text-transform: uppercase;">{{ $collaborator->project->name }}</h2>
                     <h3 class="text-lg font-bold text-gray-900">{{ $collaborator->user->name }}</h3>
                     <p class="text-gray-600 text-sm">{{ $collaborator->user->email }}</p>
                     @if($collaborator->user->phone)
@@ -25,10 +26,8 @@
                 </div>
                 <div class="text-right">
                     <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
-                            @if($collaborator->user->account_type === 'developer') bg-blue-100 text-blue-800
-                            @else bg-green-100 text-green-800
-                            @endif">
-                        {{ ucfirst($collaborator->user->account_type) }}
+                           ">
+                        {{ ucfirst($collaborator->role) }}
                     </span>
                 </div>
             </div>
@@ -40,8 +39,8 @@
             <div class="mt-4 pt-4 border-t border-gray-200">
                 <div class="text-sm text-gray-600 mb-3">
                     <strong>Role:</strong>
-                    <span class="inline-block ml-2 px-2 py-1 rounded bg-gray-100">
-                        {{ ucfirst($collaborator->role) }}
+                    <span class="inline-block ml-2 px-2 py-1 rounded bg-gray-100 {{$collaborator->user->account_type == 'developer')? 'bg-blue-100 text-blue-800': 'bg-green-100 text-green-800'}}">
+                        {{ ucfirst($collaborator->user->account_type) }}
                     </span>
                 </div>
 
