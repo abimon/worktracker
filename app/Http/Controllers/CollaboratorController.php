@@ -51,7 +51,7 @@ class CollaboratorController extends Controller
             'email' => 'required|email|exists:users,email',
             'role' => 'required|in:viewer,contributor,manager',
         ], [
-            'email.exists' => 'No user found with this email address',
+            'email.exists' => 'No developer found with this email address',
         ]);
         
         $user = User::where('email', request('email'))->first();
